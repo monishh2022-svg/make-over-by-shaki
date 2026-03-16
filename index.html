@@ -1005,3 +1005,12 @@ footer {
 </script>
 </body>
 </html>
+<script>
+document.getElementById("waBtn").addEventListener("click", function() {
+    let message = document.getElementById("message").value;
+    let phone = "919952702400"; // your WhatsApp number
+
+    let url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(message);
+    window.open(url, "_blank");
+});
+</script>
