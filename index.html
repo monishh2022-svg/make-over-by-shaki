@@ -865,35 +865,36 @@ footer {
       </a>
     </div>
 
-    <form class="contact-form" onsubmit="handleSubmit(event)">
+    <form class="contact-form" id="enquiryForm" onsubmit="handleSubmit(event)">
+      <input type="hidden" name="_subject" value="New Booking Enquiry - Saki Makeover">
       <div class="f-row">
         <div class="f-field">
           <label>Your Name</label>
-          <input type="text" placeholder="Full name" required>
+          <input type="text" id="fname" name="name" placeholder="Full name" required>
         </div>
         <div class="f-field">
           <label>Phone Number</label>
-          <input type="tel" placeholder="+91 XXXXX XXXXX" required>
+          <input type="tel" id="fphone" name="phone" placeholder="+91 XXXXX XXXXX" required>
         </div>
       </div>
       <div class="f-field">
         <label>Email Address</label>
-        <input type="email" placeholder="you@example.com">
+        <input type="email" id="femail" name="email" placeholder="you@example.com">
       </div>
       <div class="f-row">
         <div class="f-field">
           <label>Event Date</label>
-          <input type="date">
+          <input type="date" id="fdate" name="event_date">
         </div>
         <div class="f-field">
           <label>Service Interested In</label>
-          <select>
+          <select id="fservice" name="service">
             <option value="">— Select —</option>
             <option>Bridal Makeup</option>
             <option>Party / Event Glam</option>
-            <option>HD & Airbrush</option>
+            <option>HD &amp; Airbrush</option>
             <option>Saree Draping</option>
-            <option>Mehendi & Hairstyle</option>
+            <option>Mehendi &amp; Hairstyle</option>
             <option>Photoshoot Makeup</option>
             <option>Royal Full Package</option>
           </select>
@@ -901,9 +902,12 @@ footer {
       </div>
       <div class="f-field">
         <label>Message</label>
-        <textarea placeholder="Tell me about your event and look…"></textarea>
+        <textarea id="fmessage" name="message" placeholder="Tell me about your event and look…"></textarea>
       </div>
-      <button type="submit" class="f-submit">Send Enquiry 💛</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+        <button type="submit" class="f-submit" id="emailBtn">✉️ Send via Email</button>
+        <button type="button" class="f-submit" id="waBtn" style="background:#25D366;">💬 Send via WhatsApp</button>
+      </div>
     </form>
   </div>
 </section>
@@ -940,13 +944,47 @@ footer {
     document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
   });
 
-  // Form
-  function handleSubmit(e) {
+  // WhatsApp button
+  document.getElementById('waBtn').addEventListener('click', function() {
+    const name    = document.getElementById('fname').value || 'Not provided';
+    const phone   = document.getElementById('fphone').value || 'Not provided';
+    const email   = document.getElementById('femail').value || 'Not provided';
+    const date    = document.getElementById('fdate').value || 'Not specified';
+    const service = document.getElementById('fservice').value || 'Not selected';
+    const msg     = document.getElementById('fmessage').value || '-';
+    const text = "Hi Shakila! I found you on your website and would like to book a session.\n\nName: " + name + "\nPhone: " + phone + "\nEmail: " + email + "\nEvent Date: " + date + "\nService: " + service + "\nMessage: " + msg;
+    window.open('https://wa.me/919361257794?text=' + encodeURIComponent(text), '_blank');
+  });
+
+  // Email via Formspree
+  async function handleSubmit(e) {
     e.preventDefault();
-    const t = document.getElementById('toast');
-    t.classList.add('show');
-    e.target.reset();
-    setTimeout(() => t.classList.remove('show'), 4500);
+    const form = e.target;
+    const btn = document.getElementById('emailBtn');
+    btn.textContent = 'Sending…'; btn.disabled = true;
+    const data = new FormData(form);
+    try {
+      const res = await fetch('https://formspree.io/f/shakimakeover', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: data
+      });
+      const t = document.getElementById('toast');
+      if (res.ok) {
+        t.textContent = '✦ Enquiry sent to shakimakeover@gmail.com! Shakila will contact you soon.';
+      } else {
+        t.textContent = '⚠ Email failed. Please use the WhatsApp button instead.';
+      }
+      t.classList.add('show');
+      if (res.ok) form.reset();
+      setTimeout(() => t.classList.remove('show'), 5500);
+    } catch(err) {
+      const t = document.getElementById('toast');
+      t.textContent = '⚠ Network error. Please use WhatsApp to reach Shakila.';
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 5000);
+    }
+    btn.textContent = '✉️ Send via Email'; btn.disabled = false;
   }
 
   // Scroll reveal
